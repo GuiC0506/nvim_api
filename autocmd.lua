@@ -5,12 +5,34 @@ vim.api.nvim_create_autocmd("FileType", {
     end
 })
 
+-- prevent autocommand stacking its "event listener""
+local augroup = vim.api.nvim_create_augroup("augroup", { clear = true })
+vim.api.nvim_create_autocmd("BufEnter", { command = "echo 'Entering Buffer 0'", group = augroup, buffer = 0 })
+vim.api.nvim_create_autocmd("BufEnter", { command = "echo 'Entering Buffer this buffer'", group = augroup })
+vim.api.nvim_create_autocmd({ "BufLeave" }, {
+    pattern = "*",
+    -- like command, but via lua function
+    callback = function()
+        --[[ print("Leaving the current buffer") ]]
+    end,
+    group = augroup
+})
+
+vim.api.nvim_create_autocmd({ "BufWritePost"}, {
+    group = vim.api.nvim_create_augroup("testing", { clear = true }),
+    pattern = "autocmd.lua",
+    callback = function()
+        vim.api.nvim_buf_set_lines(21, 0, 0, false, { "Hello in the buffer" })
+    end
+})
+
+print(vim.fn.expand("~"))
+print(vim.api.nvim_get_current_buf())
 
 local humanReadableTable = vim.inspect({ favoriteDog = "Churros" })
 local runtimepath = vim.inspect(vim.api.nvim_list_runtime_paths())
-print(humanReadableTable)
-print(runtimepath)
-
+--[[ print(humanReadableTable) ]]
+--[[ print(runtimepath) ]]
 
 local fooX = function(a, b)
     print("FooX: " .. tostring(a) .. " | " .. tostring(b))
